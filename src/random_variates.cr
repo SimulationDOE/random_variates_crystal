@@ -1,30 +1,31 @@
 # This library implements random variate generation for several
-# common statistical distributions.  Each distribution is implemented
-# in its own class, and different parameterizations are created as
-# instances of the class using the constructor to specify the
-# parameterization.  All constructors use named parameters for clarity,
-# so the order of parameters does not matter. All RV classes provide an
-# optional argument +rng+, with which the user can specify a U(0,1) that
-# is a subclass of +Random+ to use as the core source of randomness. If +rng+
-# is not specified, it defaults to +Random+. The +Random+ class is extended
-# below to implement a +next+ method, making it (and subclasses) iterable.
+# common statistical distributions.
+#
+# Each distribution is implemented in its own class, and different
+# parameterizations are created as instances of the class using the
+# constructor to specify the parameterization.  All constructors use
+# named parameters for clarity, so the order of parameters does not
+# matter. All RV classes provide an optional argument *rng*, with which
+# the user can specify a U(0,1) that is a subclass of *Random* to use as
+# the core source of randomness. If *rng* is not specified, it defaults
+# to *Random*. The *Random* class is extended below to implement a *next*
+# method, making it (and subclasses) iterable.
 #
 # Once a random variate class has been instantiated, values can either be
-# generated on demand using the +next+ method or by using the instance as
+# generated on demand using the *next* method or by using the instance as
 # a generator in any iterable context.
-
+#
 module RandomVariates
   VERSION = "0.1.0"
 
-  # Generate values uniformly distributed between +min+ and +max+.
+  # Generate values uniformly distributed between *min* and *max*.
   #
   # *Arguments*::
-  #   - +min+ -> the lower bound for the range (default: 0).
-  #   - +max+ -> the upper bound for the range (default: 1).
-  #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  #   - *min* -> the lower bound for the range (default: 0).
+  #   - *max* -> the upper bound for the range (default: 1).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
   class Uniform
-    # include Iterator(Float64)
     include Iterator(Float64)
 
     @range : Float64
@@ -41,20 +42,18 @@ module RandomVariates
     end
   end
 
-  # Triangular random variate generator with specified +min+, +mode+, and +max+.
+  # Triangular random variate generator with specified *min*, *mode*, and *max*.
   #
   # *Arguments*::
-  #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
-  #   - +min+ -> the lower bound for the range.
-  #   - +max+ -> the upper bound for the range.
-  #   - +mode+ -> the highest likelihood value (+min+ ≤ +mode+ ≤ +max+).
-  #   - +mean+ -> the expected value of the distribution.
+  #   - *min* -> the lower bound for the range.
+  #   - *max* -> the upper bound for the range.
+  #   - *mode* -> the highest likelihood value (*min* ≤ *mode* ≤ *max*).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
   class Triangle
-    # include Iterator(Float64)
     include Iterator(Float64)
 
-    # getter :min, :max, :mode
+    getter :min, :max, :mode
     @range : Float64
     @crossover_p : Float64
 
@@ -72,13 +71,13 @@ module RandomVariates
     end
   end
 
-  # Exponential random variate generator with specified +rate+ or +mean+.
-  # One and only one of +rate+ or +mean+ should be specified.
+  # Exponential random variate generator with specified *rate* or *mean*.
+  # One and only one of *rate* or *mean* should be specified.
   #
   # *Arguments*::
-  #   - +rate+ -> the rate of occurrences per unit time (default: +nil+).
-  #   - +mean+ -> the expected value of the distribution (default: +nil+).
-  #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  #   - *rate* -> the rate of occurrences per unit time (default: *nil*).
+  #   - *mean* -> the expected value of the distribution (default: *nil*).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
   class Exponential
     include Iterator(Float64)
@@ -107,12 +106,12 @@ module RandomVariates
   end
 
   # Gaussian/normal random variate generator with specified
-  # +mu+ and +sigma deviation+.  Defaults to a standard normal.
+  # *mu* and +sigma deviation+.  Defaults to a standard normal.
   #
   # *Arguments*::
-  #   - +mu+ -> the expected value (default: 0).
-  #   - +sigma+ -> the standard deviation (default: 1).
-  #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  #   - *mu* -> the expected value (default: 0).
+  #   - *sigma* -> the standard deviation (default: 1).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
   class Normal
     include Iterator(Float64)
@@ -146,12 +145,12 @@ module RandomVariates
   end
 
   # Alternate Gaussian/normal random variate generator with specified
-  # +mu+ and +sigma+.  Defaults to a standard normal.
+  # *mu* and *sigma*.  Defaults to a standard normal.
   #
   # *Arguments*::
-  #   - +mu+ -> the expected value (default: 0).
-  #   - +sigma+ -> the standard deviation (default: 1).
-  #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  #   - *mu* -> the expected value (default: 0).
+  #   - *sigma* -> the standard deviation (default: 1).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
   class BoxMuller
     include Iterator(Float64)
@@ -183,12 +182,12 @@ module RandomVariates
 
   # Gamma generator based on Marsaglia and Tsang method Algorithm 4.33
   #
-  # Produces gamma RVs with expected value +alpha+ * +beta+.
+  # Produces gamma RVs with expected value *alpha* * *beta*.
   #
   # *Arguments*::
-  #   - +alpha+ -> the shape parameter (+alpha+ > 0; default: 1).
-  #   - +beta+ -> the rate parameter (+beta+ > 0; default: 1).
-  #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  #   - *alpha* -> the shape parameter (*alpha* > 0; default: 1).
+  #   - *beta* -> the rate parameter (*beta* > 0; default: 1).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
   class Gamma
     include Iterator(Float64)
@@ -232,9 +231,9 @@ module RandomVariates
   # # Weibull generator based on Devroye
   # #
   # # *Arguments*::
-  # #   - +rate+ -> the scale parameter (+rate+ > 0; default: 1).
-  # #   - +k+ -> the shape parameter (+k+ > 0; default: 1).
-  # #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  # #   - *rate* -> the scale parameter (*rate* > 0; default: 1).
+  # #   - *k* -> the shape parameter (*k* > 0; default: 1).
+  # #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   # #
   # class Weibull
   #   include Iterator(Float64)
@@ -253,12 +252,12 @@ module RandomVariates
   #   end
   # end
   #
-  # # Erlang generator - Weibull restricted to integer +k+
+  # # Erlang generator - Weibull restricted to integer *k*
   # #
   # # *Arguments*::
-  # #   - +rate+ -> the scale parameter (+rate+ > 0; default: 1).
-  # #   - +k+ -> the shape parameter (+k+ > 0; default: 1).
-  # #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  # #   - *rate* -> the scale parameter (*rate* > 0; default: 1).
+  # #   - *k* -> the shape parameter (*k* > 0; default: 1).
+  # #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   # #
   # class Erlang < Weibull
   #   def initialize(rate = 1.0, k = 1, @rng : Random = Random.new)
@@ -276,8 +275,8 @@ module RandomVariates
   # # http://sa-ijas.stat.unipd.it/sites/sa-ijas.stat.unipd.it/files/417-426.pdf
   # #
   # # *Arguments*::
-  # #   - +kappa+ -> concentration coefficient (+kappa+ ≥ 0).
-  # #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  # #   - *kappa* -> concentration coefficient (*kappa* ≥ 0).
+  # #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   # #
   # class VonMises
   #   include Iterator(Float64)
@@ -302,8 +301,8 @@ module RandomVariates
   # Poisson generator.
   #
   # *Arguments*::
-  #   - +rate+ -> expected number per unit time/distance (+rate+ > 0; default: 1).
-  #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  #   - *rate* -> expected number per unit time/distance (*rate* > 0; default: 1).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
   class Poisson
     include Iterator(UInt32)
@@ -339,8 +338,8 @@ module RandomVariates
   # Geometric generator.  Number of trials until first "success".
   #
   # *Arguments*::
-  #   - +p+ -> the probability of success (0 < +p+ < 1; default: 0.5).
-  #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  #   - *p* -> the probability of success (0 < *p* < 1; default: 0.5).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
   class Geometric
     include Iterator(UInt32)
@@ -359,12 +358,12 @@ module RandomVariates
     end
   end
 
-  # Binomial generator.  Number of "successes" in +n+ independent trials.
+  # Binomial generator.  Number of "successes" in *n* independent trials.
   #
   # *Arguments*::
-  #   - +n+ -> the number of trials (+p+ > 0, integer; default: 1).
-  #   - +p+ -> the probability of success (0 < +p+ < 1; default: 0.5).
-  #   - +rng+ -> the (+Enumerable+) source of U(0, 1)'s (default: UIterator.new)
+  #   - *n* -> the number of trials (*n* > 0, integer; default: 1).
+  #   - *p* -> the probability of success (0 < *p* < 1; default: 0.5).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
   class Binomial
     include Iterator(UInt32)
