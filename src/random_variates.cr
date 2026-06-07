@@ -13,7 +13,9 @@
 # generated on demand using the +next+ method or by using the instance as
 # a generator in any iterable context.
 
-module RV
+module RandomVariates
+  VERSION = "0.1.0"
+
   # Generate values uniformly distributed between +min+ and +max+.
   #
   # *Arguments*::
