@@ -1,0 +1,9 @@
+name: random_variates
+version: 0.1.0
+
+authors:
+  - SimulationDOE <prof.pjs@icloud.com>
+
+crystal: '>= 1.20.2'
+
+license: MIT
