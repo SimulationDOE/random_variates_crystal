@@ -217,8 +217,8 @@ module RandomVariates
           z2 = z * z
           v = v * v * v
           u = @rng.next
-          break if u < 1.0 - 0.0331 * z2 * z2
-          break if Math.log(u) < (0.5 * z2 + d * (1.0 - v + Math.log(v)))
+          break if (u < 1.0 - 0.0331 * z2 * z2) ||
+                   (Math.log(u) < (0.5 * z2 + d * (1.0 - v + Math.log(v))))
         end
         d * v * beta
       else
@@ -228,75 +228,84 @@ module RandomVariates
     end
   end
 
-  # # Weibull generator based on Devroye
-  # #
-  # # *Arguments*::
-  # #   - *rate* -> the scale parameter (*rate* > 0; default: 1).
-  # #   - *k* -> the shape parameter (*k* > 0; default: 1).
-  # #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
-  # #
-  # class Weibull
-  #   include Iterator(Float64)
+  # Weibull generator based on Devroye
   #
-  #   getter :rate, :k
+  # *Arguments*::
+  #   - *rate* -> the scale parameter (*rate* > 0; default: 1).
+  #   - *k* -> the shape parameter (*k* > 0; default: 1).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
-  #   def initialize(rate = 1.0, k = 1.0, @rng : Random = Random.new)
-  #     raise "Rate and k must be positive." if rate <= 0 || k <= 0
+  class Weibull
+    include Iterator(Float64)
+
+    getter :rate, :k
+
+    def initialize(@rate = 1.0, @k = 1.0, @rng : Random = Random.new)
+      raise "Rate and k must be positive." if @rate <= 0 || @k <= 0
+      @power = 1.0 / @k
+    end
+
+    def next
+      (-Math.log(@rng.next))**@power / @rate
+    end
+  end
+
+  # Erlang generator - Weibull restricted to integer *k*
   #
-  #     @rate = rate
-  #     @k = k
-  #     power = 1.0 / k
-  #     @generator = Enumerator.new do |yielder|
-  #       loop { yielder << (-Math.log(rng.next))**power / rate }
-  #     end
-  #   end
-  # end
+  # *Arguments*::
+  #   - *rate* -> the scale parameter (*rate* > 0; default: 1).
+  #   - *k* -> the shape parameter (*k* > 0; default: 1).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
-  # # Erlang generator - Weibull restricted to integer *k*
-  # #
-  # # *Arguments*::
-  # #   - *rate* -> the scale parameter (*rate* > 0; default: 1).
-  # #   - *k* -> the shape parameter (*k* > 0; default: 1).
-  # #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
-  # #
-  # class Erlang < Weibull
-  #   def initialize(rate = 1.0, k = 1, @rng : Random = Random.new)
-  #     raise "K must be integer." unless k.integer?
+  class Erlang < Weibull
+    include Iterator(Float64)
+
+    getter :rate, :k
+
+    def initialize(@rate = 1.0, @k = 1, @rng : Random = Random.new)
+      raise "K must be integer." unless k.integer?
+      super(rate: @rate, k: @k, rng: @rng)
+    end
+
+    def next
+      super.next
+    end
+  end
+
+  # von Mises generator.
   #
-  #     super(rate: rate, k: k, rng: rng)
-  #   end
-  # end
+  # This von Mises distribution generator is based on the VML algorithm by
+  # L. Barabesis: "Generating von Mises variates by the Ratio-of-Uniforms Method"
+  # Statistica Applicata Vol. 7, #4, 1995
+  # http://sa-ijas.stat.unipd.it/sites/sa-ijas.stat.unipd.it/files/417-426.pdf
   #
-  # # von Mises generator.
-  # #
-  # # This von Mises distribution generator is based on the VML algorithm by
-  # # L. Barabesis: "Generating von Mises variates by the Ratio-of-Uniforms Method"
-  # # Statistica Applicata Vol. 7, #4, 1995
-  # # http://sa-ijas.stat.unipd.it/sites/sa-ijas.stat.unipd.it/files/417-426.pdf
-  # #
-  # # *Arguments*::
-  # #   - *kappa* -> concentration coefficient (*kappa* ≥ 0).
-  # #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
-  # #
-  # class VonMises
-  #   include Iterator(Float64)
+  # *Arguments*::
+  #   - *kappa* -> concentration coefficient (*kappa* ≥ 0).
+  #   - *rng* -> the (`Iterable`) source of U(0, 1)'s (default: `Random.new`)
   #
-  #   getter :kappa
-  #
-  #   def initialize(kappa, @rng : Random = Random.new)
-  #     raise "kappa must be positive." if kappa < 0
-  #     s = (kappa > 1.3 ? 1.0 / Math.sqrt(kappa) : Math::PI * Math.exp(-kappa))
-  #     @generator = Enumerator.new do |yielder|
-  #       loop do
-  #         r1 = rng.next
-  #         theta = s * (2.0 * rng.next - 1.0) / r1
-  #         next if (theta.abs > Math::PI)
-  #         yielder << theta if (0.25 * kappa * theta * theta < 1.0 - r1) ||
-  #                       (0.5 * kappa * (Math.cos(theta) - 1.0) >= Math.log(r1))
-  #       end
-  #     end
-  #   end
-  # end
+  class VonMises
+    include Iterator(Float64)
+
+    getter :kappa
+
+    def initialize(@kappa, @rng : Random = Random.new)
+      raise "kappa must be positive." if @kappa < 0
+      @s = (@kappa > 1.3 ? 1.0 / Math.sqrt(@kappa) : Math::PI * Math.exp(-@kappa))
+    end
+
+    def next
+      loop do
+        r1 = @rng.next
+        theta = @s * (2.0 * rng.next - 1.0) / r1
+        next if theta.abs > Math::PI
+        return theta if (
+                          0.25 * @kappa * theta * theta < 1.0 - r1
+                        ) || (
+                          0.5 * @kappa * (Math.cos(theta) - 1.0) >= Math.log(r1)
+                        )
+      end
+    end
+  end
 
   # Poisson generator.
   #
@@ -309,19 +318,19 @@ module RandomVariates
 
     @threshold : Float64
 
+    getter :rate
+
     def initialize(@rate : Float64 = 1.0, @rng : Random = Random.new)
       raise "rate must be strictly positive." if @rate <= 0.0
       @threshold = Math.exp(-rate)
     end
 
+    # Allow change of rate, which is much less computationally heavy
+    # than instantiating new objects for every possible rate.
     def rate=(rate : Float64)
       raise "rate must be strictly positive." if @rate <= 0.0
       @threshold = Math.exp(-rate)
       @rate = rate
-    end
-
-    def rate
-      @rate
     end
 
     def next : UInt32
@@ -389,9 +398,7 @@ module RandomVariates
       sum = 0.0
       loop do
         sum += Math.log(@rng.next) / (@n - x)
-        if sum < @log_q
-          return @complement ? @n - x : x
-        end
+        return (@complement ? @n - x : x) if sum < @log_q
         x += 1
       end
     end
@@ -401,6 +408,8 @@ end
 module Random
   include Iterator(Float64)
 
+  # Extends the base *Random* module to provide an *Iterator* based method for
+  # generating U(0,1) values, which are the core for generating other distributions.
   def next
     next_float
   end

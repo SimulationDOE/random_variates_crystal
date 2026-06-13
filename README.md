@@ -26,7 +26,7 @@ a generator in any iterable context.
    ```yaml
    dependencies:
      random_variates:
-       github: your-github-user/random_variates
+       github: SimulationDOE/random_variates_crystal
    ```
 
 2. Run `shards install`
@@ -55,4 +55,4 @@ in the docs or the source code.
 
 ## Contributors
 
-- [SimulationDOE](https://github.com/your-github-user) - creator and maintainer
+- [SimulationDOE](https://github.com/SimulationDOE/random_variates_crystal) - creator and maintainer
