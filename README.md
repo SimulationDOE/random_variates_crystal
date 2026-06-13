@@ -50,8 +50,8 @@ puts RandomVariates::Normal.new.first(3).to_a
 ```
 
 Generator classes are available for Uniform, Triangle, Exponential, Normal,
-Gamma, Poisson, Geometric, and Binomial distributions. Details are available
-in the docs or the source code.
+Gamma, Weibull, Erlang, von Mises, Poisson, Geometric, and Binomial distributions.
+Details are available in the docs or the source code.
 
 ## Contributors
 
